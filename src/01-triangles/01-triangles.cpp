@@ -7,6 +7,8 @@
 #include "vgl.h"
 #include "LoadShaders.h"
 
+#include <iostream>
+
 enum VAO_IDs { Triangles, NumVAOs };
 enum Buffer_IDs { ArrayBuffer, NumBuffers };
 enum Attrib_IDs { vPosition = 0 };
@@ -21,8 +23,7 @@ const GLuint  NumVertices = 6;
 // init
 //
 
-void
-init( void )
+bool init ( void )
 {
     glGenVertexArrays( NumVAOs, VAOs );
     glBindVertexArray( VAOs[Triangles] );
@@ -38,17 +39,22 @@ init( void )
 
     ShaderInfo  shaders[] =
     {
-        { GL_VERTEX_SHADER, "media/shaders/triangles/triangles.vert" },
+        { GL_VERTEX_SHADER,   "media/shaders/triangles/triangles.vert" },
         { GL_FRAGMENT_SHADER, "media/shaders/triangles/triangles.frag" },
         { GL_NONE, NULL }
     };
 
     GLuint program = LoadShaders( shaders );
+    if ( ! program ) {
+        std::cerr << "Shader program not ready..." << std::endl;
+        return 0;
+    }
     glUseProgram( program );
 
     glVertexAttribPointer( vPosition, 2, GL_FLOAT,
                            GL_FALSE, 0, BUFFER_OFFSET(0) );
     glEnableVertexAttribArray( vPosition );
+    return 1;
 }
 
 //----------------------------------------------------------------------------
@@ -88,10 +94,19 @@ main( int argc, char** argv )
 
     GLFWwindow* window = glfwCreateWindow(800, 600, "Triangles", NULL, NULL);
 
+    if ( ! window ) {
+        glfwTerminate();
+        return 1;
+    }
+
     glfwMakeContextCurrent(window);
     gl3wInit();
 
-    init();
+    if ( ! init() ) {
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return 1;
+    }
 
     while (!glfwWindowShouldClose(window))
     {
@@ -101,6 +116,7 @@ main( int argc, char** argv )
     }
 
     glfwDestroyWindow(window);
-
     glfwTerminate();
+
+    return 0;
 }
