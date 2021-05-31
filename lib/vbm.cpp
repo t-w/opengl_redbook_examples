@@ -4,6 +4,7 @@
 #include "vgl.h"
 
 #include <stdio.h>
+#include <cstring>
 
 VBObject::VBObject(void)
     : m_vao(0),
@@ -43,7 +44,7 @@ bool VBObject::LoadFromVBM(const char * filename, int vertexIndex, int normalInd
     raw_data = data + header->size + header->num_attribs * sizeof(VBM_ATTRIB_HEADER) + header->num_frames * sizeof(VBM_FRAME_HEADER);
     VBM_ATTRIB_HEADER * attrib_header = (VBM_ATTRIB_HEADER *)(data + header->size);
     VBM_FRAME_HEADER * frame_header = (VBM_FRAME_HEADER *)(data + header->size + header->num_attribs * sizeof(VBM_ATTRIB_HEADER));
-    unsigned int total_data_size = 0;
+    uintptr_t total_data_size = 0;
 
     if (header->magic == 0x314d4253)
     {
