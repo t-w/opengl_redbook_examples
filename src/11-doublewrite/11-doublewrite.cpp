@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <cstring>
 
 #define MAX_FRAMEBUFFER_WIDTH 2048
 #define MAX_FRAMEBUFFER_HEIGHT 2048

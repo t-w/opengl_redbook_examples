@@ -2,6 +2,7 @@
 #define __VAPP_H__
 
 #include "vgl.h"
+#include <time.h>
 
 class VermilionApplication
 {
