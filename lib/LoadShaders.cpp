@@ -49,59 +49,78 @@ ReadShader( const char* filename )
 
 //----------------------------------------------------------------------------
 
+static void
+    deleteAllShaders ( ShaderInfo *shaders )
+{
+    for ( ShaderInfo * entry = shaders; entry->type != GL_NONE; ++entry ) {
+        if ( entry->shader )
+            glDeleteShader( entry->shader );
+        entry->shader = 0;
+    }
+}
+
+
+static GLuint
+    LoadShader ( const GLenum       shaderType,
+                 const char * const shaderFilename )
+{
+    GLuint shader = glCreateShader( shaderType );
+
+    const GLchar* source = ReadShader( shaderFilename );
+    if ( source == NULL )
+        return 0;
+
+    glShaderSource( shader, 1, &source, NULL );
+    delete [] source;
+
+    glCompileShader( shader );
+
+    GLint compiled;
+    glGetShaderiv ( shader, GL_COMPILE_STATUS, &compiled );
+    if ( !compiled ) {
+#ifdef _DEBUG
+        GLsizei len;
+        glGetShaderiv ( shader, GL_INFO_LOG_LENGTH, &len );
+
+        GLchar* log = new GLchar[len+1];
+        glGetShaderInfoLog ( shader, len, &len, log );
+        std::cerr << "Shader compilation failed: " << log << std::endl;
+        delete [] log;
+#endif /* DEBUG */
+
+        return 0;
+    }
+    return shader;
+}
+
+
+//----------------------------------------------------------------------------
+
+
 GLuint
-LoadShaders(ShaderInfo* shaders)
+LoadShaders ( ShaderInfo *shaders )
 {
     if ( shaders == NULL ) { return 0; }
 
     GLuint program = glCreateProgram();
 
-    ShaderInfo* entry = shaders;
+    ShaderInfo * entry = shaders;
     while ( entry->type != GL_NONE ) {
-        GLuint shader = glCreateShader( entry->type );
-
+        GLuint shader =  LoadShader ( entry->type,
+                                      entry->filename );
+        if ( shader == 0 ) {
+            deleteAllShaders ( shaders );
+            return 0;
+        }
         entry->shader = shader;
-
-        const GLchar* source = ReadShader( entry->filename );
-        if ( source == NULL ) {
-            for ( entry = shaders; entry->type != GL_NONE; ++entry ) {
-                glDeleteShader( entry->shader );
-                entry->shader = 0;
-            }
-
-            return 0;
-        }
-
-        glShaderSource( shader, 1, &source, NULL );
-        delete [] source;
-
-        glCompileShader( shader );
-
-        GLint compiled;
-        glGetShaderiv( shader, GL_COMPILE_STATUS, &compiled );
-        if ( !compiled ) {
-#ifdef _DEBUG
-            GLsizei len;
-            glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &len );
-
-            GLchar* log = new GLchar[len+1];
-            glGetShaderInfoLog( shader, len, &len, log );
-            std::cerr << "Shader compilation failed: " << log << std::endl;
-            delete [] log;
-#endif /* DEBUG */
-
-            return 0;
-        }
-
-        glAttachShader( program, shader );
-        
+        glAttachShader( program, entry->shader );
         ++entry;
     }
 
     glLinkProgram( program );
 
     GLint linked;
-    glGetProgramiv( program, GL_LINK_STATUS, &linked );
+    glGetProgramiv ( program, GL_LINK_STATUS, &linked );
     if ( !linked ) {
 #ifdef _DEBUG
         GLsizei len;
@@ -113,11 +132,7 @@ LoadShaders(ShaderInfo* shaders)
         delete [] log;
 #endif /* DEBUG */
 
-        for ( entry = shaders; entry->type != GL_NONE; ++entry ) {
-            glDeleteShader( entry->shader );
-            entry->shader = 0;
-        }
-        
+        deleteAllShaders ( shaders );
         return 0;
     }
 
