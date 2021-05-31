@@ -16,6 +16,7 @@
 #include "vmath.h"
 
 #include <stdio.h>
+#include <cstring>
 
 enum
 {
@@ -74,7 +75,7 @@ END_APP_DECLARATION()
 
 DEFINE_APP(ComputeParticleSimulator, "Compute Shader Particle System")
 
-#define STRINGIZE(a) #a
+//#define STRINGIZE(a) #a
 
 static inline float random_float()
 {
@@ -110,7 +111,7 @@ void ComputeParticleSimulator::Initialize(const char * title)
     compute_prog = glCreateProgram();
 
     static const char compute_shader_source[] =
-        STRINGIZE(
+        R"STRINGIZE(
 #version 430 core\n
 
 layout (std140, binding = 0) uniform attractor_block
@@ -151,7 +152,7 @@ void main(void)
     imageStore(position_buffer, int(gl_GlobalInvocationID.x), pos);
     imageStore(velocity_buffer, int(gl_GlobalInvocationID.x), vel);
 }
-        );
+        )STRINGIZE";
 
     vglAttachShaderSource(compute_prog, GL_COMPUTE_SHADER, compute_shader_source);
 
