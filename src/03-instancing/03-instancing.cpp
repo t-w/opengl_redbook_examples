@@ -87,7 +87,8 @@ void InstancingExample::Initialize(const char * title)
 
     // This is the rendering vertex shader
     static const char render_vs[] =
-        "#version 410\n"
+        //"#version 410\n"
+        "#version 300 es\n"
         "\n"
         // Uniforms
         "uniform mat4 model_matrix[4];\n"
@@ -125,8 +126,10 @@ void InstancingExample::Initialize(const char * title)
 
     // Simple fragment shader
     static const char render_fs[] =
-        "#version 410\n"
+        //"#version 410\n"
+        "#version 300 es\n"
         "\n"
+        "precision mediump float;\n"
         "layout (location = 0) out vec4 color;\n"
         "\n"
         "in vec3 vs_fs_normal;\n"
