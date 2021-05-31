@@ -1,6 +1,8 @@
 
-#version 400 core
+//#version 400 core
+#version 300 es
 
+precision mediump float;
 out vec4 fColor;
 
 void
