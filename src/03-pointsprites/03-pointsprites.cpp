@@ -69,6 +69,8 @@ void PointSpriteExample::Initialize(const char * title)
     glBindTexture(GL_TEXTURE_2D, sprite_texture);
 
     data = vtarga::load_targa("media/sprite2.tga", format, width, height);
+    if ( ! data )
+        printf ("PointSpriteExample::Initialize(): error loading targa file (data is NULL)\n");
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 
