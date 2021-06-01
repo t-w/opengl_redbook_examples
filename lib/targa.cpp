@@ -105,9 +105,10 @@ static bool get_targa_format_type_and_size(const targa_header &header, GLenum &f
 #endif
     // TODO: Support paletted TGA files. Note, L8 files are actually stored as
     // paletted bitmaps with a 256 entry grayscale palette.
-    if (header.cmap_type != 0)
+    if (header.cmap_type != 0) {
+        printf ("targa: Unsupported header.cmap_type: %d\n", header.cmap_type );
         return false;
-
+    }
     // By default...
     type = GL_UNSIGNED_BYTE;
 
@@ -184,8 +185,10 @@ unsigned char * load_targa(const char * filename, GLenum &format, int &width, in
 
     f = fopen(filename, "rb");
 
-    if (!f)
+    if (!f) {
+        printf ( "load_targa(): Cannot open file: %s\n", filename );
         return 0;
+    }
 
     fread(&header, sizeof(header), 1, f);
 
@@ -195,13 +198,16 @@ unsigned char * load_targa(const char * filename, GLenum &format, int &width, in
     GLenum type;
     int size;
 
-    get_targa_format_type_and_size(header, format, type, size);
+    if ( ! get_targa_format_type_and_size ( header, format, type, size ) )
+        printf ("Error returned by get_targa_format_type_and_size()\n");
 
     unsigned char * data = new unsigned char [width * height * size];
 
     if (is_compressed_targa(header))
     {
         // TODO: Handle compressed targa files
+        printf ( "load_targa(): cannot handle compressed targa files, "
+                 "error loading %s", filename );
     }
     else
     {
