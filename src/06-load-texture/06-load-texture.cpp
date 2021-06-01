@@ -42,7 +42,8 @@ void LoadTextureExample::Initialize(const char * title)
     base_prog = glCreateProgram();
 
     static const char quad_shader_vs[] =
-        "#version 330 core\n"
+//        "#version 330 core\n"
+        "#version 300 es\n"
         "\n"
         "layout (location = 0) in vec2 in_position;\n"
         "layout (location = 1) in vec2 in_tex_coord;\n"
@@ -57,8 +58,10 @@ void LoadTextureExample::Initialize(const char * title)
     ;
 
     static const char quad_shader_fs[] =
-        "#version 330 core\n"
+        //"#version 330 core\n"
+        "#version 300 es\n"
         "\n"
+        "precision mediump float;\n"
         "in vec2 tex_coord;\n"
         "\n"
         "layout (location = 0) out vec4 color;\n"
