@@ -86,7 +86,8 @@ void PointSpriteExample::Initialize(const char * title)
     };
 
     render_prog = LoadShaders(shader_info);
-
+    if (!render_prog)
+        printf ("PointSpriteExample::Initialize(): error loading shaders.\n");
     glUseProgram(render_prog);
 
     // "model_matrix" is actually an array of 4 matrices
