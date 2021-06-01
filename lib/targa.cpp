@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "vgl.h"
 
+//#define DEBUG_VTARGA 1
+
 namespace vtarga
 {
 
@@ -8,18 +10,28 @@ namespace vtarga
 #pragma pack (push, 1)
 #endif
 
-struct targa_header
+struct
+#ifdef __GNUC__
+    __attribute__((__packed__))
+#endif
+    targa_header
 {
     unsigned char           id_length;
     unsigned char           cmap_type;
     unsigned char           image_type;
     struct
+#ifdef __GNUC__
+        __attribute__((__packed__))
+#endif
     {
         unsigned short      cmap_table_offset;
         unsigned short      cmap_entry_count;
         unsigned char       cmap_entry_size;
     } cmap_spec;
     struct
+#ifdef __GNUC__
+        __attribute__((__packed__))
+#endif
     {
         unsigned short      x_origin;
         unsigned short      y_origin;
@@ -33,9 +45,52 @@ struct targa_header
         };
     } image_spec;
 };
+#if DEBUG_VTARGA == 1
+typedef struct targa_header targa_header_type;
+#endif
 
 #ifdef _MSC_VER
 #pragma pack (pop)
+#endif
+
+static_assert ( sizeof(struct targa_header) == 18,
+                "targa.cpp: Targa header not properly aligned!" );
+
+#if DEBUG_VTARGA == 1
+static void
+    dump_targa_header ( const targa_header &header )
+{
+    printf ("header.id_length:  %d, offset: %d\n"
+            "header.cmap_type:  %d, offset: %d\n"
+            "header.image_type: %d, offset: %d\n"
+            "header.cmap_spec.cmap_table_offset: %d, offset: %d\n"
+            "header.cmap_spec.cmap_entry_count:  %d, offset: %d\n"
+            "header.cmap_spec.cmap_entry_size:   %d, offset: %d\n"
+            "header.image_spec.x_origin:   %d, offset: %d\n"
+            "header.image_spec.y_origin:   %d, offset: %d\n"
+            "header.image_spec.width:      %d, offset: %d\n"
+            "header.image_spec.height:     %d, offset: %d\n"
+            "header.image_spec.bits_per_pixel: %d, offset: %d\n",
+            header.id_length,  offsetof(targa_header_type, id_length),
+            header.cmap_type,  offsetof(targa_header_type, cmap_type),
+            header.image_type, offsetof(targa_header_type, image_type),
+            header.cmap_spec.cmap_table_offset,
+            offsetof ( targa_header_type, cmap_spec.cmap_table_offset ),
+            header.cmap_spec.cmap_entry_count,
+            offsetof ( targa_header_type, cmap_spec.cmap_entry_count ),
+            header.cmap_spec.cmap_entry_size,
+            offsetof ( targa_header_type, cmap_spec.cmap_entry_size ),
+            header.image_spec.x_origin,
+            offsetof ( targa_header_type, image_spec.x_origin ),
+            header.image_spec.y_origin,
+            offsetof ( targa_header_type, image_spec.y_origin ),
+            header.image_spec.width,
+            offsetof ( targa_header_type, image_spec.width ),
+            header.image_spec.height,
+            offsetof ( targa_header_type, image_spec.height ),
+            header.image_spec.bits_per_pixel,
+            offsetof ( targa_header_type, image_spec.bits_per_pixel ) );
+}
 #endif
 
 static bool is_compressed_targa(const targa_header &header)
@@ -45,6 +100,9 @@ static bool is_compressed_targa(const targa_header &header)
 
 static bool get_targa_format_type_and_size(const targa_header &header, GLenum &format, GLenum &type, int &size)
 {
+#if DEBUG_VTARGA == 1
+    dump_targa_header ( header );
+#endif
     // TODO: Support paletted TGA files. Note, L8 files are actually stored as
     // paletted bitmaps with a 256 entry grayscale palette.
     if (header.cmap_type != 0)
